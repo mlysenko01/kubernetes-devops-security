@@ -29,16 +29,16 @@ pipeline {
     }
 
   
-    stage('SonarQube SAST') {
-      steps {
-        sh "mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://devsecops-lossemi.eastus.cloudapp.azure.com:9000 -Dsonar.login=02b02086a4bc71fbd5bb52217a241a09de50f66c"
-      }
-      post {
-        always {
-          pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-        }
-      }
-    }
+    // stage('SonarQube SAST') {
+    //   steps {
+    //     sh "mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://devsecops-lossemi.eastus.cloudapp.azure.com:9000 -Dsonar.login=02b02086a4bc71fbd5bb52217a241a09de50f66c"
+    //   }
+    //   post {
+    //     always {
+    //       pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+    //     }
+    //   }
+    // }
 
     stage('SonarQube - SAST') {
       steps {
