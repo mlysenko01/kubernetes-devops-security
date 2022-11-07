@@ -56,14 +56,35 @@ pipeline {
      }
     }
 
-    stage('Kubernetes Deployment - DEV') {
+      stage('Vulnerability Scan - Docker') {
       steps {
-        withKubeConfig([credentialsId: 'kubeconfig']) {
-         sh "sed -i 's#replace#mlysenko/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
-         sh "kubectl apply -f k8s_deployment_service.yaml"
-        }
+        parallel(
+          "Dependency Scan": {
+            sh "mvn dependency-check:check"
+          },
+          "Trivy Scan": {
+            sh "bash trivy-docker-image-scan.sh"
+          },
+          "OPA Conftest": {
+            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
+          }
+        )
       }
     }
+    
+      stage('Vulnerability Scan - Kubernetes') {
+      steps {
+        parallel(
+          "OPA Scan": {
+            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
+          },
+          "Kubesec Scan": {
+            sh "bash kubesec-scan.sh"
+          }
+        )
+      }
+    }
+
 
   }
 
